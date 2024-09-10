@@ -29,7 +29,7 @@ const ensureDirectoryExists = async (dirPath: string) => {
 // Function to run a command
 const runCommand = (command: string): Promise<void> => {
   return new Promise((resolve, reject) => {
-    exec(command, (error, stdout, stderr) => {
+    const proc = exec(command, (error, stdout, stderr) => {
       if (error) {
         console.error(`Error: ${stderr}`);
         reject(error);
@@ -38,6 +38,14 @@ const runCommand = (command: string): Promise<void> => {
         resolve();
       }
     });
+
+    proc.stdout?.on("data", (out) => {
+      console.log(`stdout: ${out}`)
+    })
+
+    proc.stderr?.on("data", (err) => {
+      console.log(`stderr: ${err}`)
+    })
   });
 };
 
