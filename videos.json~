@@ -1,0 +1,16 @@
+[
+    {
+        "resource": "2024-10-15 11-25-09",
+        "remote": false,
+        "sourceDirectory": "\\\\192.168.1.5\\Storage\\storage\\vods\\to-be-processed",
+        "outputDirectory": "\\\\192.168.1.5\\Storage\\storage\\vods\\processed\\2024-10-15_11-25-0",
+        "fileType": "mkv"
+    },
+    {
+        "resource": "2024-10-14 13-49-22",
+        "remote": false,
+        "sourceDirectory": "\\\\192.168.1.5\\Storage\\storage\\mixes",
+        "outputDirectory": "\\\\192.168.1.5\\Storage\\storage\\vods\\processed\\mix_2024-10-14_13-49-22",
+        "fileType": "mkv"
+    }
+  ]

@@ -1,4 +1,4 @@
-import { exec } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
 import * as path from 'node:path';
 
@@ -27,27 +27,35 @@ const ensureDirectoryExists = async (dirPath: string) => {
 };
 
 // Function to run a command
-const runCommand = (command: string): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    const proc = exec(command, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error: ${stderr}`);
-        reject(error);
+const runCommand = (command: string) => {
+  return new Promise<void>((resolve, reject) => {
+    // Split the command into the executable and its arguments
+    const [cmd, ...args] = command.split(' ');
+
+    const proc = spawn(cmd, args, { shell: true });
+
+    proc.stdout.on('data', (data) => {
+      console.log(`stdout: ${data}`);
+    });
+
+    proc.stderr.on('data', (data) => {
+      console.log(`stderr: ${data}`);
+    });
+
+    proc.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(`Process exited with code ${code}`));
       } else {
-        console.log(`Output: ${stdout}`);
         resolve();
       }
     });
 
-    proc.stdout?.on("data", (out) => {
-      console.log(`stdout: ${out}`)
-    })
-
-    proc.stderr?.on("data", (err) => {
-      console.log(`stderr: ${err}`)
-    })
+    proc.on('error', (error) => {
+      reject(error);
+    });
   });
 };
+
 
 
 // Video class
@@ -93,9 +101,9 @@ class Video {
     const m3u81080p = this.getOutputM3U8("1080p")
     const ts1080p = this.getOutputTsFile("1080p")
 
-    const lowerRes = "1280x720"
-    const m3u8720p = this.getOutputM3U8("720p")
-    const ts720p = this.getOutputTsFile("720p")
+    const lowerRes = "854x480";
+    const m3u8480p = this.getOutputM3U8("480p");
+    const ts480p = this.getOutputTsFile("480p");
 
     const m3u8Audio = this.getOutputM3U8("audio")
     const tsAudio = this.getOutputTsFile("audio")
@@ -103,7 +111,7 @@ class Video {
     return `
       ffmpeg -i "${this.inputResource}" \
         -map 0:v -map 0:a -c:v:0 libx264 -b:v:0 3000k -c:a:0 aac -b:a:0 128k -s:v:0 ${fullRes} -f hls -hls_time 6 -hls_playlist_type vod -hls_segment_filename "${ts1080p}" "${m3u81080p}" \
-        -map 0:v -map 0:a -c:v:1 libx264 -b:v:1 1000k -c:a:1 aac -b:a:1 128k -s:v:1 ${lowerRes} -f hls -hls_time 6 -hls_playlist_type vod -hls_segment_filename "${ts720p}" "${m3u8720p}" \
+        -map 0:v -map 0:a -c:v:1 libx264 -b:v:1 800k -c:a:1 aac -b:a:1 96k -s:v:1 ${lowerRes} -f hls -hls_time 6 -hls_playlist_type vod -hls_segment_filename "${ts480p}" "${m3u8480p}" \
         -map 0:a -c:a aac -b:a 128k -vn -f hls -hls_time 6 -hls_playlist_type vod -hls_segment_filename "${tsAudio}" "${m3u8Audio}"
     `.trim();
   }
@@ -118,15 +126,20 @@ class Video {
     }
   }
 
+  /**
+   * Note: this function assumes that the `index.m3u8`
+   * file is served at the same level as the alternate
+   * m3u8 playlists.
+   */
   async createIndexPlaylistFile(): Promise<void> {
     const masterPlaylistContent = `
 #EXTM3U
 #EXT-X-STREAM-INF:BANDWIDTH=4000000,RESOLUTION=1920x1080
-${this.videoData.resource}/1080p.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=1500000,RESOLUTION=1280x720
-${this.videoData.resource}/720p.m3u8
+1080p.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=800000,RESOLUTION=854x480
+480p.m3u8
 #EXT-X-STREAM-INF:BANDWIDTH=128000,AUDIO="audio"
-${this.videoData.resource}/audio.m3u8
+audio.m3u8
     `.trim();
 
     const masterPlaylistPath = path.join(this.outputPath, 'index.m3u8');
@@ -156,5 +169,10 @@ for (const video of videos) {
   console.log(`Creating unified m3u8 playlist...`)
   await video.createIndexPlaylistFile()
 
-  console.log(`${video.videoData.resource} -> Done. Please upload to cyberduck!`)
+  console.log(`${video.videoData.resource} -> Done`)
+}
+
+console.log(`Uploaded ${videos.length} videos`)
+for (const video of videos) {
+  console.log(`-> ${video.videoData.resource}`)
 }
