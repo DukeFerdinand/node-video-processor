@@ -1,0 +1,23 @@
+[
+    {
+        "resource": "2024-12-11 11-57-13",
+        "remote": false,
+        "sourceDirectory": "\\\\192.168.1.5\\Storage\\storage\\vods\\unprocessed",
+        "outputDirectory": "\\\\192.168.1.5\\Storage\\storage\\vods\\processed\\2024-12-11_11-57-13",
+        "fileType": "mkv"
+    },
+    {
+        "resource": "2024-12-13 11-25-32",
+        "remote": false,
+        "sourceDirectory": "\\\\192.168.1.5\\Storage\\storage\\vods\\unprocessed",
+        "outputDirectory": "\\\\192.168.1.5\\Storage\\storage\\vods\\processed\\2024-12-13_11-25-32",
+        "fileType": "mkv"
+    },
+    {
+        "resource": "2024-12-17 11-25-24",
+        "remote": false,
+        "sourceDirectory": "\\\\192.168.1.5\\Storage\\storage\\vods\\unprocessed",
+        "outputDirectory": "\\\\192.168.1.5\\Storage\\storage\\vods\\processed\\2024-12-17_11-25-24",
+        "fileType": "mkv"
+    }
+]
